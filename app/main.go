@@ -14,6 +14,7 @@ func main() {
 		fmt.Println("Failed reading input")
 		return
 	}
-	command = strings.TrimSuffix(command, "\r\n")
+	command = strings.TrimSuffix(command, "\r\n")  // win
+	command = strings.TrimSuffix(command, "\n")
 	fmt.Printf("%s: command not found\r\n", command)
 }
