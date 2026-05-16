@@ -27,17 +27,20 @@ func (c EchoCommand) Run() {
 }
 
 func (c TypeCommand) Run() {
-	_, ok := ParseBuiltinCommands(c.Args)
+	if len(c.Args) <= 1 {
+		return
+	}
+	_, ok := ParseBuiltinCommands(c.Args[1:])
 	if ok == nil {
-		fmt.Printf("%s is a shell builtin", c.Args[0])
+		fmt.Printf("%s is a shell builtin\n", c.Args[1])
 	} else {
-		fmt.Printf("%s: not found", c.Args[0])
+		fmt.Printf("%s: not found\n", c.Args[1])
 	}
 }
 
 const (
-	exit string = "exit"
-	echo string = "echo"
+	exit  string = "exit"
+	echo  string = "echo"
 	type_ string = "type"
 )
 
