@@ -6,16 +6,31 @@ import (
 	"strings"
 )
 
-type BuiltinCommands interface {
-	Run()
+type BaseCommand struct {
+	Args []string
 }
 
-type ExitCommand struct{}
+func (b BaseCommand) GetName() string {
+	fmt.Println("GetName", b.Args)
+	if len(b.Args) == 0 {
+		return ""
+	}
+	return b.Args[0]
+}
+
+type BuiltinCommands interface {
+	Run()
+	GetName() string
+}
+
+type ExitCommand struct {
+	BaseCommand
+}
 type EchoCommand struct {
-	Args []string
+	BaseCommand
 }
 type TypeCommand struct {
-	Args []string
+	BaseCommand
 }
 
 func (c ExitCommand) Run() {
@@ -45,13 +60,14 @@ const (
 )
 
 func ParseBuiltinCommands(args []string) (bc BuiltinCommands, err error) {
+	base := BaseCommand{Args: args}
 	switch args[0] {
 	case "exit":
-		return ExitCommand{}, nil
+		return ExitCommand{base}, nil
 	case "echo":
-		return EchoCommand{args}, nil
+		return EchoCommand{base}, nil
 	case "type":
-		return TypeCommand{args}, nil
+		return TypeCommand{base}, nil
 	default:
 		return nil, fmt.Errorf("unknown command [%s]", args)
 	}
