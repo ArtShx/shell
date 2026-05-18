@@ -37,6 +37,9 @@ func main() {
 				if err == nil {
 					hasExecBit := fileinfo.Mode().Perm()&0111 != 0
 					hasExecBit = fileinfo.Mode().IsRegular() && hasExecBit
+					if !hasExecBit {
+						continue
+					}
 					fmt.Printf("%s is %s\n", command_args[0], fullpathCmd)
 					found_command = true
 					break
