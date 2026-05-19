@@ -143,5 +143,5 @@ func findCommand(commandArgs []string) (command IBaseCommand, err error) {
 	} else {
 		return builtincmd, nil
 	}
-	return nil, fmt.Errorf("%s: command not found\r\n", commandArgs[0])
+	return nil, fmt.Errorf("%s: command not found\n", commandArgs[0])
 }
