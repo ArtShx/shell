@@ -25,39 +25,9 @@ func main() {
 
 		cmd, errcmd := findCommand(command_args)
 		if errcmd != nil {
-			fmt.Println(errcmd)
+			fmt.Print(errcmd)
 			continue
 		}
 		cmd.Run()
-
-		// builtincmd, builtinerr := ParseBuiltinCommands(command_args)
-		// found_command := false
-		//
-		// if builtinerr != nil {
-		// 	// try not builtin cmd
-		// 	path_full := os.Getenv("PATH")
-		// 	paths := strings.Split(path_full, ":")
-		// 	for _, path := range paths {
-		// 		fullpathCmd := filepath.Join(path, command_args[0])
-		// 		fileinfo, err := os.Stat(fullpathCmd)
-		// 		if err == nil {
-		// 			hasExecBit := fileinfo.Mode().Perm()&0111 != 0
-		// 			hasExecBit = fileinfo.Mode().IsRegular() && hasExecBit
-		// 			if !hasExecBit {
-		// 				continue
-		// 			}
-		// 			fmt.Printf("%s is %s\n", command_args[0], fullpathCmd)
-		// 			found_command = true
-		// 			break
-		// 		}
-		// 	}
-		// } else {
-		// 	builtincmd.Run()
-		// 	continue
-		// }
-		//
-		// if !found_command {
-		// 	fmt.Printf("%s: command not found\r\n", command)
-		// }
 	}
 }
