@@ -3,11 +3,36 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
+type IBaseCommand interface {
+	Run()
+	GetName() string
+	GetGroup() CommandGroup
+	GetPath() string
+}
+
 type BaseCommand struct {
+	IBaseCommand
 	Args []string
+}
+
+type CommandGroup string
+
+const (
+	GroupBuiltin  = "builtin"
+	GroupExternal = "external"
+)
+
+type BuiltinCommand struct {
+	BaseCommand
+}
+
+type ExternalCommand struct {
+	BaseCommand
+	fullPath string
 }
 
 func (b BaseCommand) GetName() string {
@@ -18,19 +43,34 @@ func (b BaseCommand) GetName() string {
 	return b.Args[0]
 }
 
-type BuiltinCommands interface {
-	Run()
-	GetName() string
+func (c *BuiltinCommand) GetGroup() CommandGroup {
+	return GroupBuiltin
+}
+
+func (c *ExternalCommand) GetGroup() CommandGroup {
+	return GroupExternal
+}
+
+func (c *BuiltinCommand) GetPath() string {
+	return c.Args[0]
+}
+
+func (c *ExternalCommand) GetPath() string {
+	return c.fullPath
+}
+
+func (cmd ExternalCommand) Run() {
+	fmt.Printf("%s is %s\n", cmd.Args[0], cmd.fullPath)
 }
 
 type ExitCommand struct {
-	BaseCommand
+	BuiltinCommand
 }
 type EchoCommand struct {
-	BaseCommand
+	BuiltinCommand
 }
 type TypeCommand struct {
-	BaseCommand
+	BuiltinCommand
 }
 
 func (c ExitCommand) Run() {
@@ -45,9 +85,16 @@ func (c TypeCommand) Run() {
 	if len(c.Args) <= 1 {
 		return
 	}
-	_, ok := ParseBuiltinCommands(c.Args[1:])
-	if ok == nil {
-		fmt.Printf("%s is a shell builtin\n", c.Args[1])
+	cmd, errcmd := findCommand(c.Args[1:])
+	if errcmd == nil {
+		switch cmd.GetGroup() {
+		case GroupBuiltin:
+			fmt.Printf("%s is a shell builtin\n", c.Args[1])
+		case GroupExternal:
+			fmt.Printf("%s is %s\n", c.Args[1], cmd.GetPath())
+		default:
+		}
+
 	} else {
 		fmt.Printf("%s: not found\n", c.Args[1])
 	}
@@ -59,16 +106,42 @@ const (
 	type_ string = "type"
 )
 
-func ParseBuiltinCommands(args []string) (bc BuiltinCommands, err error) {
-	base := BaseCommand{Args: args}
+func BuiltinCommandsFactory(args []string) (bc IBaseCommand, err error) {
+	base := BuiltinCommand{BaseCommand{Args: args}}
 	switch args[0] {
 	case "exit":
-		return ExitCommand{base}, nil
+		return &ExitCommand{base}, nil
 	case "echo":
-		return EchoCommand{base}, nil
+		return &EchoCommand{base}, nil
 	case "type":
-		return TypeCommand{base}, nil
+		return &TypeCommand{base}, nil
 	default:
-		return nil, fmt.Errorf("unknown command [%s]", args)
+		return nil, fmt.Errorf("unknown command [%s]\n", args)
 	}
+}
+
+func findCommand(commandArgs []string) (command IBaseCommand, err error) {
+	// look for builtin
+	builtincmd, builtinerr := BuiltinCommandsFactory(commandArgs)
+
+	if builtinerr != nil {
+		// look for external commands
+		path_full := os.Getenv("PATH")
+		paths := strings.Split(path_full, ":")
+		for _, path := range paths {
+			fullpathCmd := filepath.Join(path, commandArgs[0])
+			fileinfo, err := os.Stat(fullpathCmd)
+			if err == nil {
+				hasExecBit := fileinfo.Mode().Perm()&0111 != 0
+				hasExecBit = fileinfo.Mode().IsRegular() && hasExecBit
+				if !hasExecBit {
+					continue
+				}
+				return &ExternalCommand{BaseCommand{Args: commandArgs}, fullpathCmd}, nil
+			}
+		}
+	} else {
+		return builtincmd, nil
+	}
+	return nil, fmt.Errorf("%s: command not found\r\n", commandArgs)
 }
