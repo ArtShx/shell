@@ -64,7 +64,7 @@ func (cmd ExternalCommand) Run() {
 	// fmt.Printf("%s is %s\n", cmd.Args[0], cmd.fullPath)
 	execCmd := exec.Command(cmd.Args[0], strings.Join(cmd.Args[1:], " "))
 	out, _ := execCmd.CombinedOutput()
-	fmt.Printf("%s\n", out)
+	fmt.Printf("%s", out)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
