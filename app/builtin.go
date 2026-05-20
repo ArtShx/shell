@@ -78,6 +78,9 @@ type EchoCommand struct {
 type TypeCommand struct {
 	BuiltinCommand
 }
+type PwdCommand struct {
+	BuiltinCommand
+}
 
 func (c ExitCommand) Run() {
 	os.Exit(0)
@@ -106,10 +109,15 @@ func (c TypeCommand) Run() {
 	}
 }
 
+func (c PwdCommand) Run() {
+	GetNavigation()
+}
+
 const (
 	exit  string = "exit"
 	echo  string = "echo"
 	type_ string = "type"
+	pwd string = "pwd"
 )
 
 func BuiltinCommandsFactory(args []string) (bc IBaseCommand, err error) {
@@ -121,6 +129,8 @@ func BuiltinCommandsFactory(args []string) (bc IBaseCommand, err error) {
 		return &EchoCommand{base}, nil
 	case "type":
 		return &TypeCommand{base}, nil
+	case "pwd":
+		return &PwdCommand{base}, nil
 	default:
 		return nil, fmt.Errorf("unknown command [%s]\n", args)
 	}
