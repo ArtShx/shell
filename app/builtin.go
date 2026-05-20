@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
-	"os/exec"
 )
 
 type IBaseCommand interface {
@@ -61,8 +61,7 @@ func (c *ExternalCommand) GetPath() string {
 }
 
 func (cmd ExternalCommand) Run() {
-	// fmt.Printf("%s is %s\n", cmd.Args[0], cmd.fullPath)
-	execCmd := exec.Command(cmd.Args[0], strings.Join(cmd.Args[1:], " "))
+	execCmd := exec.Command(cmd.Args[0], cmd.Args[1:]...)
 	out, _ := execCmd.CombinedOutput()
 	fmt.Printf("%s", out)
 	// if err != nil {
