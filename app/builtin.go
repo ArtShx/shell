@@ -61,10 +61,10 @@ func (c *ExternalCommand) GetPath() string {
 }
 
 func (cmd ExternalCommand) Run() {
-	fmt.Printf("%s is %s\n", cmd.Args[0], cmd.fullPath)
+	// fmt.Printf("%s is %s\n", cmd.Args[0], cmd.fullPath)
 	execCmd := exec.Command(cmd.Args[0], strings.Join(cmd.Args[1:], " "))
 	out, _ := execCmd.CombinedOutput()
-	fmt.Println(out)
+	fmt.Printf("%s\n", out)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
