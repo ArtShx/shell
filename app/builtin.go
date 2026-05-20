@@ -81,6 +81,9 @@ type TypeCommand struct {
 type PwdCommand struct {
 	BuiltinCommand
 }
+type CdCommand struct {
+	BuiltinCommand
+}
 
 func (c ExitCommand) Run() {
 	os.Exit(0)
@@ -110,14 +113,24 @@ func (c TypeCommand) Run() {
 }
 
 func (c PwdCommand) Run() {
-	GetNavigation()
+	nav := GetNavigation()
+	fmt.Printf("%s\n", nav.wd)
+}
+
+func (c CdCommand) Run() {
+	if len(c.Args) > 2 {
+		return
+	}
+	nav := GetNavigation()
+	nav.ChangeDirectory(c.Args[1])
 }
 
 const (
 	exit  string = "exit"
 	echo  string = "echo"
 	type_ string = "type"
-	pwd string = "pwd"
+	pwd   string = "pwd"
+	cd    string = "cd"
 )
 
 func BuiltinCommandsFactory(args []string) (bc IBaseCommand, err error) {
@@ -131,6 +144,8 @@ func BuiltinCommandsFactory(args []string) (bc IBaseCommand, err error) {
 		return &TypeCommand{base}, nil
 	case "pwd":
 		return &PwdCommand{base}, nil
+	case "cd":
+		return &CdCommand{base}, nil
 	default:
 		return nil, fmt.Errorf("unknown command [%s]\n", args)
 	}
