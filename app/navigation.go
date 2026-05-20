@@ -29,18 +29,14 @@ func GetNavigation() *Navigation {
 }
 
 func (nav *Navigation) ChangeDirectory(destination string) {
-	// os.Stat(destination)
-	// filepath.exi
-	//filepath.Abs(destination)
 	if stat, err := os.Stat(destination); err == nil && stat.IsDir() {
-
 		absPath, err := filepath.Abs(destination)
 		// fmt.Printf("Destination: %s\n2. Abs: %s\n", destination, absPath)
 		if err == nil {
 			nav.wd = absPath
 			os.Setenv("PWD", destination)
 		} else {
-			// fmt.Printf("%s\n", err)
+			fmt.Printf("cd: %s: No such file or directory\n", destination)
 		}
 	}
 }
