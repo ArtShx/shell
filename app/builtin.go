@@ -9,7 +9,7 @@ import (
 )
 
 type IBaseCommand interface {
-	Run()
+	Run() string
 	GetName() string
 	GetGroup() CommandGroup
 	GetPath() string
@@ -60,10 +60,10 @@ func (c *ExternalCommand) GetPath() string {
 	return c.fullPath
 }
 
-func (cmd ExternalCommand) Run() {
+func (cmd ExternalCommand) Run() string {
 	execCmd := exec.Command(cmd.Args[0], cmd.Args[1:]...)
 	out, _ := execCmd.CombinedOutput()
-	fmt.Printf("%s", out)
+	return fmt.Sprintf("%s", out)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
@@ -85,43 +85,44 @@ type CdCommand struct {
 	BuiltinCommand
 }
 
-func (c ExitCommand) Run() {
+func (c ExitCommand) Run() string {
 	os.Exit(0)
+	return ""
 }
 
-func (c EchoCommand) Run() {
-	fmt.Println(strings.Join(c.Args[1:], " "))
+func (c EchoCommand) Run() string {
+	return fmt.Sprintln(strings.Join(c.Args[1:], " "))
 }
 
-func (c TypeCommand) Run() {
+func (c TypeCommand) Run() string {
 	if len(c.Args) <= 1 {
-		return
+		return ""
 	}
 	cmd, errcmd := findCommand(c.Args[1:])
 	if errcmd == nil {
 		switch cmd.GetGroup() {
 		case GroupBuiltin:
-			fmt.Printf("%s is a shell builtin\n", c.Args[1])
+			return fmt.Sprintf("%s is a shell builtin\n", c.Args[1])
 		case GroupExternal:
-			fmt.Printf("%s is %s\n", c.Args[1], cmd.GetPath())
+			return fmt.Sprintf("%s is %s\n", c.Args[1], cmd.GetPath())
 		default:
 		}
 
-	} else {
-		fmt.Printf("%s: not found\n", c.Args[1])
 	}
+	return fmt.Sprintf("%s: not found\n", c.Args[1])
 }
 
-func (c PwdCommand) Run() {
+func (c PwdCommand) Run() string {
 	nav := GetNavigation()
-	fmt.Printf("%s\n", nav.wd)
+	return fmt.Sprintf("%s\n", nav.wd)
 }
 
-func (c CdCommand) Run() {
+func (c CdCommand) Run() string {
 	if len(c.Args) > 2 {
-		return
+		return ""
 	}
 	ChangeDirectory(c.Args[1])
+	return ""
 }
 
 const (

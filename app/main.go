@@ -17,17 +17,38 @@ func main() {
 		}
 		command = strings.TrimSuffix(command, "\r\n") // windows
 		command = strings.TrimSuffix(command, "\n")
-		command_args := strings.Split(command, " ")
-		if len(command_args) == 0 {
+		commandArgs := strings.Split(command, " ")
+		if len(commandArgs) == 0 {
 			fmt.Printf("Failed parsing command [%s]\n", command)
 			continue
 		}
 
-		cmd, errcmd := findCommand(command_args)
+		var redirectOutput int = -1
+		var outputFile string
+
+		for i, val := range commandArgs {
+			if val == "1>" || val == ">" {
+				redirectOutput = i
+				break
+			}
+		}
+
+		if redirectOutput != -1 {
+			outputFile = commandArgs[redirectOutput+1]
+			commandArgs = commandArgs[:redirectOutput]
+		}
+
+		cmd, errcmd := findCommand(commandArgs)
 		if errcmd != nil {
 			fmt.Print(errcmd)
 			continue
 		}
-		cmd.Run()
+		stdout := cmd.Run()
+		if redirectOutput == -1 {
+			fmt.Printf("%s", stdout)
+		} else {
+			err = os.WriteFile(outputFile, []byte(stdout), 0644)
+			_ = err
+		}
 	}
 }
