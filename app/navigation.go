@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	// "path/filepath"
 )
@@ -33,13 +34,18 @@ func GetNavigation() *Navigation {
 
 func ChangeDirectory(destination string) {
 	nav := GetNavigation()
-	fullpath := filepath.Join(nav.wd, destination)
+	var fullpath string
+	if strings.HasPrefix(destination, "/") {
+		fullpath = destination
+	} else {
+		fullpath = filepath.Join(nav.wd, destination)
+	}
 	absPath, err := filepath.Abs(fullpath)
 	if err != nil {
 		fmt.Printf("cd: %s: No such file or directory\n", fullpath)
 		return
 	}
-	err = os.Chdir(absPath)
+	//err = os.Chdir(absPath)
 	// if err != nil {
 	// 	fmt.Printf("cd: %s: No such file or directory\n", destination)
 	// 	return
