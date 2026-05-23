@@ -37,6 +37,13 @@ func ChangeDirectory(destination string) {
 	var fullpath string
 	if strings.HasPrefix(destination, "/") {
 		fullpath = destination
+	} else if strings.HasPrefix(destination, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Printf("Failed to get home dir: %s\n", err)
+			return
+		}
+		fullpath = strings.Replace(destination, "~", home, 1)
 	} else {
 		fullpath = filepath.Join(nav.wd, destination)
 	}
