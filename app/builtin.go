@@ -121,8 +121,7 @@ func (c CdCommand) Run() {
 	if len(c.Args) > 2 {
 		return
 	}
-	nav := GetNavigation()
-	nav.ChangeDirectory(c.Args[1])
+	ChangeDirectory(c.Args[1])
 }
 
 const (

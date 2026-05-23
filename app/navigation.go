@@ -17,27 +17,32 @@ var (
 	once sync.Once
 )
 
+func _getWd() string {
+	cwd := os.Getenv("PWD")
+	return cwd
+}
+
 func GetNavigation() *Navigation {
 	once.Do(func() {
-		cwd, err := os.Getwd()
-		if err != nil {
-			fmt.Printf("Failed getting cwd: %s\n", err)
-		}
+		cwd := _getWd()
 		nav = &Navigation{wd: cwd}
 	})
+	nav.wd = _getWd()
 	return nav
 }
 
-func (nav *Navigation) ChangeDirectory(destination string) {
-	if stat, err := os.Stat(destination); err == nil && stat.IsDir() {
-		absPath, err := filepath.Abs(destination)
-		// fmt.Printf("Destination: %s\n2. Abs: %s\n", destination, absPath)
-		if err == nil {
-			nav.wd = absPath
-			os.Setenv("PWD", destination)
-		} else {
-			fmt.Printf("cd: %s: No such file or directory\n", destination)
+func ChangeDirectory(destination string) {
+	nav := GetNavigation()
+	fullpath := filepath.Join(nav.wd, destination)
+	if stat, err := os.Stat(fullpath); err == nil && stat.IsDir() {
+		absPath, err := filepath.Abs(fullpath)
+		if err != nil {
+			fmt.Printf("cd: %s: No such file or directory\n", fullpath)
+			return
 		}
+		os.Chdir(absPath)
+		nav.wd = absPath
+		os.Setenv("PWD", fullpath)
 	} else {
 		fmt.Printf("cd: %s: No such file or directory\n", destination)
 	}
