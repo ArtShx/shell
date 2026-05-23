@@ -45,11 +45,11 @@ func ChangeDirectory(destination string) {
 		fmt.Printf("cd: %s: No such file or directory\n", fullpath)
 		return
 	}
-	//err = os.Chdir(absPath)
-	// if err != nil {
-	// 	fmt.Printf("cd: %s: No such file or directory\n", destination)
-	// 	return
-	// }
+	err = os.Chdir(absPath)
+	if err != nil {
+		fmt.Printf("cd: %s: No such file or directory\n", destination)
+		return
+	}
 	nav.wd = absPath
 	os.Setenv("PWD", fullpath)
 }
