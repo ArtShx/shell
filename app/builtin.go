@@ -9,7 +9,7 @@ import (
 )
 
 type IBaseCommand interface {
-	Run() string
+	Run() (string, error)
 	GetName() string
 	GetGroup() CommandGroup
 	GetPath() string
@@ -60,13 +60,11 @@ func (c *ExternalCommand) GetPath() string {
 	return c.fullPath
 }
 
-func (cmd ExternalCommand) Run() string {
+func (cmd ExternalCommand) Run() (string, error) {
 	execCmd := exec.Command(cmd.Args[0], cmd.Args[1:]...)
-	out, _ := execCmd.CombinedOutput()
-	return fmt.Sprintf("%s", out)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	out, err := execCmd.CombinedOutput()
+	// fmt.Printf("1. %s\n2.%s\n", out, err)
+	return fmt.Sprintf("%s", out), err
 }
 
 type ExitCommand struct {
@@ -85,44 +83,44 @@ type CdCommand struct {
 	BuiltinCommand
 }
 
-func (c ExitCommand) Run() string {
+func (c ExitCommand) Run() (string, error) {
 	os.Exit(0)
-	return ""
+	return "", nil
 }
 
-func (c EchoCommand) Run() string {
-	return fmt.Sprintln(strings.Join(c.Args[1:], " "))
+func (c EchoCommand) Run() (string, error) {
+	return fmt.Sprintln(strings.Join(c.Args[1:], " ")), nil
 }
 
-func (c TypeCommand) Run() string {
+func (c TypeCommand) Run() (string, error) {
 	if len(c.Args) <= 1 {
-		return ""
+		return "", nil
 	}
 	cmd, errcmd := findCommand(c.Args[1:])
 	if errcmd == nil {
 		switch cmd.GetGroup() {
 		case GroupBuiltin:
-			return fmt.Sprintf("%s is a shell builtin\n", c.Args[1])
+			return fmt.Sprintf("%s is a shell builtin\n", c.Args[1]), nil
 		case GroupExternal:
-			return fmt.Sprintf("%s is %s\n", c.Args[1], cmd.GetPath())
+			return fmt.Sprintf("%s is %s\n", c.Args[1], cmd.GetPath()), nil
 		default:
 		}
 
 	}
-	return fmt.Sprintf("%s: not found\n", c.Args[1])
+	return fmt.Sprintf("%s: not found\n", c.Args[1]), nil
 }
 
-func (c PwdCommand) Run() string {
+func (c PwdCommand) Run() (string, error) {
 	nav := GetNavigation()
-	return fmt.Sprintf("%s\n", nav.wd)
+	return fmt.Sprintf("%s\n", nav.wd), nil
 }
 
-func (c CdCommand) Run() string {
+func (c CdCommand) Run() (string, error) {
 	if len(c.Args) > 2 {
-		return ""
+		return "", nil
 	}
 	ChangeDirectory(c.Args[1])
-	return ""
+	return "", nil
 }
 
 const (

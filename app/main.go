@@ -23,7 +23,7 @@ func main() {
 			continue
 		}
 
-		var redirectOutput int = -1
+		var redirectOutput = -1
 		var outputFile string
 
 		for i, val := range commandArgs {
@@ -43,7 +43,11 @@ func main() {
 			fmt.Print(errcmd)
 			continue
 		}
-		stdout := cmd.Run()
+		stdout, err := cmd.Run()
+		if err != nil {
+			fmt.Printf("%s", stdout)
+			continue
+		}
 		if redirectOutput == -1 {
 			fmt.Printf("%s", stdout)
 		} else {
