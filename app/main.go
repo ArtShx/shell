@@ -45,14 +45,12 @@ func main() {
 		}
 		stdout, stderr, err := cmd.Run()
 		if stderr != "" {
-			fmt.Printf("%s", stderr)
-			continue
+			fmt.Fprintf(os.Stderr, "%s", stderr)
 		}
 		if redirectOutput == -1 {
-			fmt.Printf("%s", stdout)
+			fmt.Fprintf(os.Stdout, "%s", stdout)
 		} else {
 			err = os.WriteFile(outputFile, []byte(stdout), 0644)
-			_ = err
 		}
 	}
 }
