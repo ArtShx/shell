@@ -61,6 +61,8 @@ func main() {
 		}
 		if redirectStdout {
 			err = os.WriteFile(redirectFile, []byte(stdout), 0644)
+		} else if redirectStderr {
+			err = os.WriteFile(redirectFile, []byte(stderr), 0644)
 		} else {
 			fmt.Fprintf(os.Stdout, "%s", stdout)
 		}
