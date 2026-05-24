@@ -24,17 +24,25 @@ func main() {
 		}
 
 		var redirectOutput = -1
-		var outputFile string
+		var redirectFile string
+		var redirectStdout bool = false
+		var redirectStderr bool = false
 
 		for i, val := range commandArgs {
 			if val == "1>" || val == ">" {
 				redirectOutput = i
+				redirectStdout = true
+				break
+			}
+			if val == "2>" {
+				redirectOutput = i
+				redirectStderr = true
 				break
 			}
 		}
 
 		if redirectOutput != -1 {
-			outputFile = commandArgs[redirectOutput+1]
+			redirectFile = commandArgs[redirectOutput+1]
 			commandArgs = commandArgs[:redirectOutput]
 		}
 
@@ -45,12 +53,16 @@ func main() {
 		}
 		stdout, stderr, err := cmd.Run()
 		if stderr != "" {
-			fmt.Fprintf(os.Stderr, "%s", stderr)
+			if redirectStderr {
+				err = os.WriteFile(redirectFile, []byte(stderr), 0644)
+			} else {
+				fmt.Fprintf(os.Stderr, "%s", stderr)
+			}
 		}
-		if redirectOutput == -1 {
-			fmt.Fprintf(os.Stdout, "%s", stdout)
+		if redirectStdout {
+			err = os.WriteFile(redirectFile, []byte(stdout), 0644)
 		} else {
-			err = os.WriteFile(outputFile, []byte(stdout), 0644)
+			fmt.Fprintf(os.Stdout, "%s", stdout)
 		}
 	}
 }
