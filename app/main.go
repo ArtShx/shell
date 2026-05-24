@@ -43,9 +43,9 @@ func main() {
 			fmt.Print(errcmd)
 			continue
 		}
-		stdout, err := cmd.Run()
-		if err != nil {
-			fmt.Printf("%s", stdout)
+		stdout, stderr, err := cmd.Run()
+		if stderr != "" {
+			fmt.Printf("%s", stderr)
 			continue
 		}
 		if redirectOutput == -1 {

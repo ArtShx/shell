@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,7 +10,7 @@ import (
 )
 
 type IBaseCommand interface {
-	Run() (string, error)
+	Run() (string, string, error)
 	GetName() string
 	GetGroup() CommandGroup
 	GetPath() string
@@ -60,11 +61,13 @@ func (c *ExternalCommand) GetPath() string {
 	return c.fullPath
 }
 
-func (cmd ExternalCommand) Run() (string, error) {
+func (cmd ExternalCommand) Run() (string, string, error) {
 	execCmd := exec.Command(cmd.Args[0], cmd.Args[1:]...)
-	out, err := execCmd.CombinedOutput()
-	// fmt.Printf("1. %s\n2.%s\n", out, err)
-	return fmt.Sprintf("%s", out), err
+	var stdout, stderr bytes.Buffer
+	execCmd.Stdout = &stdout
+	execCmd.Stderr = &stderr
+	err := execCmd.Run()
+	return stdout.String(), stderr.String(), err
 }
 
 type ExitCommand struct {
@@ -83,44 +86,44 @@ type CdCommand struct {
 	BuiltinCommand
 }
 
-func (c ExitCommand) Run() (string, error) {
+func (c ExitCommand) Run() (string, string, error) {
 	os.Exit(0)
-	return "", nil
+	return "", "", nil
 }
 
-func (c EchoCommand) Run() (string, error) {
-	return fmt.Sprintln(strings.Join(c.Args[1:], " ")), nil
+func (c EchoCommand) Run() (string, string, error) {
+	return fmt.Sprintln(strings.Join(c.Args[1:], " ")), "", nil
 }
 
-func (c TypeCommand) Run() (string, error) {
+func (c TypeCommand) Run() (string, string, error) {
 	if len(c.Args) <= 1 {
-		return "", nil
+		return "", "", nil
 	}
 	cmd, errcmd := findCommand(c.Args[1:])
 	if errcmd == nil {
 		switch cmd.GetGroup() {
 		case GroupBuiltin:
-			return fmt.Sprintf("%s is a shell builtin\n", c.Args[1]), nil
+			return fmt.Sprintf("%s is a shell builtin\n", c.Args[1]), "", nil
 		case GroupExternal:
-			return fmt.Sprintf("%s is %s\n", c.Args[1], cmd.GetPath()), nil
+			return fmt.Sprintf("%s is %s\n", c.Args[1], cmd.GetPath()), "", nil
 		default:
 		}
 
 	}
-	return fmt.Sprintf("%s: not found\n", c.Args[1]), nil
+	return fmt.Sprintf("%s: not found\n", c.Args[1]), "", nil
 }
 
-func (c PwdCommand) Run() (string, error) {
+func (c PwdCommand) Run() (string, string, error) {
 	nav := GetNavigation()
-	return fmt.Sprintf("%s\n", nav.wd), nil
+	return fmt.Sprintf("%s\n", nav.wd), "", nil
 }
 
-func (c CdCommand) Run() (string, error) {
+func (c CdCommand) Run() (string, string, error) {
 	if len(c.Args) > 2 {
-		return "", nil
+		return "", "", nil
 	}
 	ChangeDirectory(c.Args[1])
-	return "", nil
+	return "", "", nil
 }
 
 const (
